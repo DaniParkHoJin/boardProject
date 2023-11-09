@@ -7,12 +7,12 @@
     + Spring Boot : 3.1.5
     + Packaging : Jar
 2. Dependensies(의존성)
-    + lombok
-    + spring Boot DevTools
-    + spring Web
+  
+    + Spring Boot DevTools
+    + Lombok
+    + Spring Web
     + Validation
     + Thymeleaf
     + JDBC API
     + Spring Data JDBC
-    + Ojdbc11
-    + ModelMapper
+
