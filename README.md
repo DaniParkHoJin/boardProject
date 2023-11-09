@@ -6,7 +6,7 @@
     + Language: Java ver.17
     + Spring Boot : 3.1.5
     + Packaging : Jar
-2. Dependensies(의존성)
+2. Dependensies(의존성 주입)
   
     + Spring Boot DevTools
     + Lombok
