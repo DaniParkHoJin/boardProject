@@ -22,7 +22,9 @@
     + Thymeleaf Layout Dialect
     + ModelMapper
    
+
 3. 설정
+
     + 파일 업로드
     + 정적 자원
     + 라이브 리로드
@@ -30,4 +32,5 @@
     + 프로필
 
 4. 공통 설정
-   + 예외페이지 구성
+   + 예외 페이지
+   + admin, PC(front), Mobile (CSS, JS 화면 연결 설정)
