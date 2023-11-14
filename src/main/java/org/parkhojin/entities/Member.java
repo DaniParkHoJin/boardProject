@@ -1,6 +1,7 @@
 package org.parkhojin.entities;
 
 import lombok.Data;
+import org.parkhojin.commons.constans.MemberType;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,9 @@ public class Member {
 
     private String mobile;
 
+    private MemberType mtype= MemberType.USER;
+
     private LocalDateTime regDt;
     private LocalDateTime modDt;
+
 }

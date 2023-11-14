@@ -1,4 +1,4 @@
-package org.koreait.models.member;
+package org.parkhojin.models.member;
 
 import lombok.Builder;
 import lombok.Data;
