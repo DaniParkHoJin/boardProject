@@ -34,3 +34,5 @@
 4. 공통 설정
    + 예외 페이지
    + admin, PC(front), Mobile (CSS, JS 화면 연결 설정)
+
+11월 13일 수업 후
