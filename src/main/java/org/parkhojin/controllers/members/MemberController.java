@@ -1,11 +1,13 @@
 package org.parkhojin.controllers.members;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.Utils;
-import org.parkhojin.entities.Member;
+import org.parkhojin.entities.BoardData;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,11 +17,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/member")
 @RequiredArgsConstructor
+@Transactional
 public class MemberController {
 
     private final Utils utils;
 
     private final MemberUtil memberUtil;
+
+    private final EntityManager em;
 
     @GetMapping("/join")
     public String join() {
@@ -38,30 +43,16 @@ public class MemberController {
     @ResponseBody
     @GetMapping("/info")
     public void info() {
-        Member member = memberUtil.getMember();
-        if (memberUtil.isLogin()) {
-            log.info(member.toString());
-        }
-        log.info("로그인 여부 : {}", memberUtil.isLogin());
+        BoardData data = BoardData.builder()
+                .subject("제목")
+                .content("내용")
+                .build();
+        em.persist(data);
+        em.flush();
 
+        data.setSubject("(수정)제목");
+        em.flush();
     }
-
-    /*
-    public void info(){
-       MemberInfo member =(MemberInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        log.info(member.toString());
-    }*/
-    /*
-    public void info(@AuthenticationPrincipal MemberInfo memberInfo){
-        log.info(memberInfo.toString());
-    }*/
-
-    /*
-    public void info(Principal principal) {
-        String email = principal.getName();
-        log.info(email);
-    }
-    */
 
 
 }
