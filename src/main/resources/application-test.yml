@@ -8,6 +8,7 @@ spring:
 
   # JPA 설정
   jpa:
+    open-in-view: true
     properties:
       hibernate:
         # 실행되는 쿼리를 콘솔에 출력
