@@ -31,6 +31,12 @@
     + 타임리프
     + 프로필
 
+
 4. 공통 설정
    + 예외 페이지
    + admin, PC(front), Mobile (CSS, JS 화면 연결 설정)
+
+
+5. Spring Data JPA
+  추가
+

@@ -2,6 +2,10 @@ server:
   port: 3000
 
 spring:
+  # 프로필 설정
+  profiles:
+    active: dev
+
   # 데이터 베이스 설정
   datasource:
     driverClassName: oracle.jdbc.driver.OracleDriver
@@ -29,6 +33,10 @@ spring:
     cache: false
     prefix: file:src/main/resources/templates/
 
+  flyway:
+    enabled: true
+
+# 파일 업로드 설정
 file:
   upload:
     path: C:/uploads/

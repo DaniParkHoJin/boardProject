@@ -2,18 +2,21 @@ package org.parkhojin.restcontrollers;
 
 import org.parkhojin.commons.exceptions.CommonException;
 import org.parkhojin.commons.rest.JSONData;
+import org.parkhojin.commons.exceptions.CommonException;
+import org.parkhojin.commons.rest.JSONData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice("org.parkhojin.restcontrollers")
-public class CommRestController {
+public class CommonRestController {
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<JSONData<Object>> errorHandler(Exception e){
+    public ResponseEntity<JSONData<Object>> errorHandler(Exception e) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
-        if(e instanceof CommonException){
+        if (e instanceof CommonException) {
             CommonException commonException = (CommonException) e;
             status = commonException.getStatus();
         }
@@ -27,5 +30,4 @@ public class CommRestController {
 
         return ResponseEntity.status(status).body(data);
     }
-
 }
