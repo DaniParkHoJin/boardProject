@@ -14,6 +14,8 @@ public class Utils {
     private static ResourceBundle validationsBundle;
     private static ResourceBundle errorsBundle;
 
+    private static ResourceBundle commonsBundle;
+
     private final HttpServletRequest request;
 
     private final HttpSession session;
@@ -21,11 +23,19 @@ public class Utils {
     static {
         validationsBundle = ResourceBundle.getBundle("messages.validations");
         errorsBundle = ResourceBundle.getBundle("messages.errors");
+        commonsBundle = ResourceBundle.getBundle("messages.commons");
     }
 
     public static String getMessage(String code, String bundleType) {
         bundleType = Objects.requireNonNullElse(bundleType, "validation");
-        ResourceBundle bundle = bundleType.equals("error") ? errorsBundle : validationsBundle;
+        ResourceBundle bundle = null;
+        if (bundleType.equals("common")) {
+            bundle = commonsBundle;
+        } else if (bundleType.equals("error")) {
+            bundle = errorsBundle;
+        } else {
+            bundle = validationsBundle;
+        }
 
         try {
             return bundle.getString(code);
@@ -36,8 +46,8 @@ public class Utils {
     }
 
     public boolean isMobile() {
-        String device = (String)session.getAttribute("device");
-        if(device != null){
+        String device = (String) session.getAttribute("device");
+        if (device != null) {
             return device.equals("mobile");
         }
         // 요청 헤더 User-Agent
@@ -48,13 +58,15 @@ public class Utils {
 
     public String tpl(String tplPath) {
         return String.format("%s/" + tplPath, isMobile() ? "mobile" : "front");
-    }
+    } //모바일 PC 구분
+
     public static void loginInit(HttpSession session) {
         session.removeAttribute("email");
         session.removeAttribute("NotBlank_email");
         session.removeAttribute("NotBlank_password");
         session.removeAttribute("globalError");
     }
+
     /**
      * 단일 요청 데이터 조회
      */
@@ -64,7 +76,6 @@ public class Utils {
 
     /**
      * 복수개 요청 데이터 조회
-     *
      */
     public String[] getParams(String name) {
         return request.getParameterValues(name);
@@ -78,7 +89,6 @@ public class Utils {
     /**
      * 비회원 구분 UID
      * 비회원 구분은 IP + 브라우저 종류
-     *
      */
     public int guestUid() {
         String ip = request.getRemoteAddr();
