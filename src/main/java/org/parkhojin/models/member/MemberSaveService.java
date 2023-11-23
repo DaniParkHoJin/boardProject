@@ -1,7 +1,7 @@
 package org.parkhojin.models.member;
 
 import lombok.RequiredArgsConstructor;
-import org.parkhojin.commons.constans.MemberType;
+import org.parkhojin.commons.constants.MemberType;
 import org.parkhojin.controllers.members.JoinValidator;
 import org.parkhojin.controllers.members.RequestJoin;
 import org.parkhojin.entities.Member;

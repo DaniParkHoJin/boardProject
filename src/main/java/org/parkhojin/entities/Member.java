@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.parkhojin.commons.constans.MemberType;
+import org.parkhojin.commons.constants.MemberType;
 @Entity
 @Data @Builder
 @NoArgsConstructor @AllArgsConstructor

@@ -2,7 +2,7 @@ package org.parkhojin.commons;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.parkhojin.commons.constans.MemberType;
+import org.parkhojin.commons.constants.MemberType;
 import org.parkhojin.entities.Member;
 import org.springframework.stereotype.Component;
 
