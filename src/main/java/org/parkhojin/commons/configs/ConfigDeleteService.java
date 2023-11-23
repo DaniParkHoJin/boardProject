@@ -2,7 +2,7 @@ package org.parkhojin.commons.configs;
 
 import lombok.RequiredArgsConstructor;
 import org.parkhojin.entities.Configs;
-import org.parkhojin.restcontrollers.ConfigsRepository;
+import org.parkhojin.repositories.ConfigsRepository;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/admin/config")
 @RequiredArgsConstructor
 public class BasicConfigController {
+
     private final ConfigSaveService saveService;
     private final ConfigInfoService infoService;
 
-    private String code = "config";
+    private final String code = "config";
 
     @GetMapping
     public String config(Model model) {
@@ -27,22 +28,21 @@ public class BasicConfigController {
         form = form == null ? new ConfigForm() : form;
 
         model.addAttribute("configForm", form);
-        return "/admin/basic/index";
+        return "admin/basic/index";
     }
+
     @PostMapping
-    public String configPs(ConfigForm form, Model model){
+    public String configPs(ConfigForm form, Model model) {
         commonProcess(model);
 
         saveService.save(code, form);
         model.addAttribute("message", Utils.getMessage("저장되었습니다.", "common"));
 
-        return "/admin/basic/index";
+        return "admin/basic/index";
     }
-    private void commonProcess(Model model){
 
+    private void commonProcess(Model model) {
         model.addAttribute("pageTitle", Utils.getMessage("사이트_설정", "common"));
         model.addAttribute("menuCode", code);
     }
-
-
 }
