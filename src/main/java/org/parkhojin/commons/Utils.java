@@ -11,10 +11,10 @@ import java.util.ResourceBundle;
 @Component
 @RequiredArgsConstructor
 public class Utils {
-    private static final ResourceBundle validationsBundle;
-    private static final ResourceBundle errorsBundle;
+    private static ResourceBundle validationsBundle;
+    private static ResourceBundle errorsBundle;
 
-    private static final ResourceBundle commonsBundle;
+    private static ResourceBundle commonsBundle;
 
     private final HttpServletRequest request;
 

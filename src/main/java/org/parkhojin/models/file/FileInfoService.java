@@ -225,7 +225,7 @@ public class FileInfoService {
     }
 
     //파일 검색 모드를 정의하는 enum
-    enum SearchMode {
+    static enum SearchMode {
         ALL, // 모든 파일 검색
         DONE, // 완료된 파일 검색
         UNDONE // 미완료된 파일 검색

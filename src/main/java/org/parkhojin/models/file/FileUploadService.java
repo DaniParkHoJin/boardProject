@@ -21,8 +21,8 @@ public class FileUploadService {
     private final FileInfoService infoService;
 
     // 썸네일 생성 사이즈
-    private final int width = 150;
-    private final int height = 150;
+    private int width = 150;
+    private int height = 150;
 
     /**
      * 파일을 업로드하고 관련 정보를 저장

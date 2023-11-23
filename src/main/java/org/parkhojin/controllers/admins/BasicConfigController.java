@@ -17,7 +17,7 @@ public class BasicConfigController {
     private final ConfigSaveService saveService;
     private final ConfigInfoService infoService;
 
-    private final String code = "config";
+    private String code = "config";
 
     @GetMapping
     public String config(Model model) {
