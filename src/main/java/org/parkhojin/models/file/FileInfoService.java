@@ -4,9 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.parkhojin.entities.FileInfo;
 import org.parkhojin.repositories.FileInfoRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -225,7 +225,7 @@ public class FileInfoService {
     }
 
     //파일 검색 모드를 정의하는 enum
-    static enum SearchMode {
+    enum SearchMode {
         ALL, // 모든 파일 검색
         DONE, // 완료된 파일 검색
         UNDONE // 미완료된 파일 검색

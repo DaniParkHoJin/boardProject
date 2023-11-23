@@ -1,11 +1,11 @@
 package org.parkhojin.models.file;
 
 import lombok.RequiredArgsConstructor;
+import org.parkhojin.repositories.FileInfoRepository;
 import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.exceptions.AuthorizationException;
 import org.parkhojin.entities.FileInfo;
 import org.parkhojin.entities.Member;
-import org.parkhojin.repositories.FileInfoRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -29,7 +29,7 @@ public class FileDeleteService {
         FileInfo item = infoService.get(id); // 주어진 ID에 해당하는 파일 정보 조회
 
         /** 파일 삭제 권한 체크 S */
-        String createdBy = item.getCreatedBy(); // 파일 업로드한 사용자 아이디
+        String createdBy = item.getCreateBy(); // 파일 업로드한 사용자 아이디
         Member member = memberUtil.getMember(); // 현재 로그인한 회원 정보 조회
 
         // 파일을 업로드한 사용자와 현재 로그인한 회원이 같은지, 또는 관리자 권한인지 확인
