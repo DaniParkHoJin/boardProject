@@ -45,7 +45,7 @@ public class BoardController implements ScriptExceptionProcess {
     @PostMapping("/save")
     public String save(@Valid BoardConfigForm form, Errors errors, Model model) {
 
-        String mode = Objects.requireNonNullElse(form.getMode(),"add");
+        String mode = Objects.requireNonNullElse(form.getMode(), "add");
         commonProcess(mode, model);
 
         if (errors.hasErrors()) {

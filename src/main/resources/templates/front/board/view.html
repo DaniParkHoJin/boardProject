@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{front/layouts/main}">
+
+<main layout:fragment="content" th:object="${boardData}">
+    <dl>
+        <dt>제목</dt>
+        <dd th:text="*{subject}"></dd>
+    </dl>
+    <div>
+        <div class="date" th:text="*{#temporals.format(createdAt, 'yyyy.MM.dd HH:mm')}"></div>
+        <div class="poster" th:text="*{'작성자:' + poster}"></div>
+    </div>
+    <dl>
+        <dt>내용</dt>
+        <dd th:utext="*{content}"></dd>
+    </dl>
+</main>
+
+</html>
