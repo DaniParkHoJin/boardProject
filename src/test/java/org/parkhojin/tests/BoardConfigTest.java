@@ -25,6 +25,8 @@ public class BoardConfigTest {
     @DisplayName("게시판 설정 저장 테스트")
     void boardConfigTest() throws Exception {
         mockMvc.perform(post("/admin/board/save")
+                        // Content-Type: application/x-www-form-url
+                        .param("mode","add")
                         .with(csrf())
                         )
                 .andDo(print());
