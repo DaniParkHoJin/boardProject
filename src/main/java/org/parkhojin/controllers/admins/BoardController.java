@@ -3,8 +3,12 @@ package org.parkhojin.controllers.admins;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.parkhojin.commons.ListData;
 import org.parkhojin.commons.ScriptExceptionProcess;
+import org.parkhojin.commons.constants.BoardAuthority;
 import org.parkhojin.commons.menus.Menu;
+import org.parkhojin.entities.Board;
+import org.parkhojin.models.board.config.BoardConfigInfoService;
 import org.parkhojin.models.board.config.BoardConfigSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,10 +24,17 @@ public class BoardController implements ScriptExceptionProcess {
 
     private final HttpServletRequest request;
     private final BoardConfigSaveService saveService;
+    private final BoardConfigInfoService infoService;
 
     @GetMapping
-    public String list(Model model) {
+    public String list(@ModelAttribute BoardSearch search, Model model) {
         commonProcess("list", model);
+
+        ListData<Board> data = infoService.getList(search);
+
+        model.addAttribute("items", data.getContent());
+        model.addAttribute("pagination", data.getPagination());
+
 
         return "admin/board/list";
     }
@@ -36,7 +47,7 @@ public class BoardController implements ScriptExceptionProcess {
     }
 
     @GetMapping("/edit/{bId}")
-    public String update(@PathVariable String bId, Model model) {
+    public String update(@PathVariable("bId") String bId, Model model) {
         commonProcess("edit", model);
 
         return "admin/board/edit";
@@ -67,5 +78,7 @@ public class BoardController implements ScriptExceptionProcess {
         model.addAttribute("menuCode", "board");
         model.addAttribute("submenus", Menu.gets("board"));
         model.addAttribute("subMenuCode", Menu.getSubMenuCode(request));
+
+        model.addAttribute("authorities", BoardAuthority.getList());
     }
 }
