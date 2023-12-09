@@ -1,15 +1,16 @@
 package org.parkhojin.models.file;
 
 import lombok.RequiredArgsConstructor;
-import org.parkhojin.repositories.FileInfoRepository;
 import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.exceptions.AuthorizationException;
 import org.parkhojin.entities.FileInfo;
 import org.parkhojin.entities.Member;
+import org.parkhojin.repositories.FileInfoRepository;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +62,9 @@ public class FileDeleteService {
 
         repository.delete(item); // 파일 정보 삭제
         repository.flush();
+    }
+    public void deleteByGid(String gid){
+        List<FileInfo> files = infoService.getListAll(gid);
+        files.stream().forEach(file -> delete(file.getId()));
     }
 }

@@ -5,9 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.parkhojin.commons.ListData;
+import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.Pagination;
 import org.parkhojin.commons.Utils;
 import org.parkhojin.commons.constants.BoardAuthority;
+import org.parkhojin.commons.exceptions.AuthorizationException;
 import org.parkhojin.controllers.admins.BoardConfigForm;
 import org.parkhojin.controllers.admins.BoardSearch;
 import org.parkhojin.entities.Board;
@@ -31,12 +33,33 @@ public class BoardConfigInfoService {
 
     private final BoardRepository repository;
     private final HttpServletRequest request;
+    private final MemberUtil memberUtil;
 
     public Board get(String bId) {
         Board data = repository.findById(bId).orElseThrow(BoardNotFoundException::new);
 
         return data;
     }
+
+    public Board get(String bId, boolean checkAuthority) {
+        Board data = get(bId);
+        if (!checkAuthority) {
+            return data;
+        }
+        // 글 작성시 권한 체크
+        BoardAuthority authority = data.getAuthority();
+        if (authority != BoardAuthority.ALL) {
+            if (!memberUtil.isLogin()) {
+                throw new AuthorizationException();
+            }
+            if (authority == BoardAuthority.ADMIN) {
+                throw new AuthorizationException();
+            }
+        }
+
+        return data;
+    }
+
 
     public BoardConfigForm getForm(String bId) {
         Board board = get(bId);
@@ -95,7 +118,7 @@ public class BoardConfigInfoService {
         Page<Board> data = repository.findAll(andBuilder, pageable);
 
 
-        Pagination pagination = new Pagination(page, (int)data.getTotalElements(), 10, limit, request);
+        Pagination pagination = new Pagination(page, (int) data.getTotalElements(), 10, limit, request);
 
         ListData<Board> listData = new ListData<>();
         listData.setContent(data.getContent());

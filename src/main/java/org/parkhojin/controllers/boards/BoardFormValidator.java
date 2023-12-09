@@ -26,7 +26,7 @@ public class BoardFormValidator implements Validator, PasswordValidator {
         if (!memberUtil.isLogin()) { // 미로그인 상태 -> 비회원 비밀번호 필수
             String guestPw = form.getGuestPw();
 
-            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "questPw", "NotBlank");
+            ValidationUtils.rejectIfEmptyOrWhitespace(errors, "guestPw", "NotBlank");
 
             if (StringUtils.hasText(guestPw)) {
                 // 비회원 비밀번호는 1자리 이상 알파벳, 숫자 필수

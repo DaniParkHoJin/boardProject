@@ -38,7 +38,7 @@ public class BoardData extends Base {
     @Column(length = 30, nullable = false)
     private String poster;
 
-    @Column(length = 45)
+    @Column(length = 65)
     private String guestPw; // 비회원 비밀번호
 
     @Column(nullable = false)

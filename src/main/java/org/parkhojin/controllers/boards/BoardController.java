@@ -1,18 +1,22 @@
 package org.parkhojin.controllers.boards;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.parkhojin.commons.ListData;
 import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.ScriptExceptionProcess;
 import org.parkhojin.commons.Utils;
 import org.parkhojin.commons.constants.BoardAuthority;
 import org.parkhojin.commons.exceptions.AlertBackException;
+import org.parkhojin.commons.exceptions.AlertException;
 import org.parkhojin.entities.Board;
 import org.parkhojin.entities.BoardData;
-import org.parkhojin.models.board.BoardInfoService;
-import org.parkhojin.models.board.BoardSaveService;
+import org.parkhojin.entities.FileInfo;
+import org.parkhojin.models.board.*;
 import org.parkhojin.models.board.config.BoardConfigInfoService;
 import org.parkhojin.models.board.config.BoardNotFoundException;
+import org.parkhojin.models.file.FileInfoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -32,23 +36,37 @@ public class BoardController implements ScriptExceptionProcess {
     private final MemberUtil memberUtil;
     private final BoardSaveService saveService;
     private final BoardInfoService infoService;
+    private final BoardDeleteService deleteService;
     private final BoardConfigInfoService configInfoService;
+    private final FileInfoService fileInfoService;
+
+    private BoardData boardData;
 
     @GetMapping("/write/{bId}")
-    public String write(@PathVariable("bId") String bId, @ModelAttribute BoardForm form, Model model) {
+    public String write(@PathVariable("bId") String bId, @ModelAttribute  BoardForm form, Model model) {
         commonProcess(bId, "write", model);
 
-        if(memberUtil.isLogin()) {
+        if (memberUtil.isLogin()) {
             form.setPoster(memberUtil.getMember().getUserNm());
         }
 
-        form.setBId((bId));
+        form.setBId(bId);
 
         return utils.tpl("board/write");
     }
 
     @GetMapping("/update/{seq}")
     public String update(@PathVariable("seq") Long seq, Model model) {
+        if (!infoService.isMine(seq)) { // 직접 작성한 게시글이 아닌 경우
+            throw new AlertBackException(Utils.getMessage("작성한_게시글만_수정할_수_있습니다.", "error"));
+        }
+
+        BoardForm form = infoService.getForm(seq);
+
+        commonProcess(form.getBId(), "update", model);
+
+        model.addAttribute("boardForm", form);
+
         return utils.tpl("board/update");
     }
 
@@ -59,42 +77,101 @@ public class BoardController implements ScriptExceptionProcess {
 
         commonProcess(bId, mode, model);
 
+        if (mode.equals("update")) {
+            Long seq = form.getSeq();
+            if (!infoService.isMine(seq)) { // 직접 작성한 게시글이 아닌 경우
+                throw new AlertBackException(Utils.getMessage("작성한_게시글만_수정할_수_있습니다.", "error"));
+            }
+        }
+
+
+        saveService.save(form, errors);
+
         if (errors.hasErrors()) {
+            String gid = form.getGid();
+            List<FileInfo> editorImages = fileInfoService.getListAll(gid, "editor");
+            List<FileInfo> attachFiles = fileInfoService.getListAll(gid, "attach");
+            form.setEditorImages(editorImages);
+            form.setAttachFiles(attachFiles);
+
             return utils.tpl("board/" + mode);
         }
 
-        saveService.save(form);
 
         return "redirect:/board/list/" + bId;
     }
 
     @GetMapping("/view/{seq}")
-    public String view(@PathVariable("seq") Long seq, Model model) {
+    public String view(@PathVariable("seq") Long seq,
+                       @ModelAttribute  BoardDataSearch search, Model model) {
 
         BoardData data = infoService.get(seq);
+        boardData = data;
+
+        String bId = data.getBoard().getBId();
+        commonProcess(bId, "view", model);
+
+        search.setBId(bId);
+        ListData<BoardData> listData = infoService.getList(search);
 
         model.addAttribute("boardData", data);
+        model.addAttribute("items", listData.getContent());
+        model.addAttribute("pagination", listData.getPagination());
 
         return utils.tpl("board/view");
     }
 
     @GetMapping("/delete/{seq}")
     public String delete(@PathVariable("seq") Long seq) {
+        if (!infoService.isMine(seq)) {
+            throw new AlertBackException(Utils.getMessage("작성한_게시글만_삭제_가능합니다.", "error"));
+        }
 
-        return "redirect:/board/list/게시판 ID";
+        BoardData data = infoService.get(seq);
+        deleteService.delete(seq);
+
+        return "redirect:/board/list/" + data.getBoard().getBId();
     }
 
     @GetMapping("/list/{bId}")
-    public String list(@PathVariable("bId") String bId, Model model) {
+    public String list(@PathVariable("bId") String bId, @ModelAttribute BoardDataSearch search, Model model) {
+        commonProcess(bId, "list", model);
+
+        search.setBId(bId);
+        System.out.println("search : " + search);
+
+        ListData<BoardData> data = infoService.getList(search);
+        model.addAttribute("items", data.getContent());
+        model.addAttribute("pagination", data.getPagination());
 
         return utils.tpl("board/list");
+    }
+
+    @PostMapping("/guest/password")
+    public String guestPasswordCheck(@RequestParam("password") String password, HttpSession session, Model model) {
+
+        Long seq = (Long)session.getAttribute("guest_seq");
+        if (seq == null) {
+            throw new BoardDataNotFoundException();
+        }
+
+        if (!infoService.checkGuestPassword(seq, password)) { // 비번 검증 실패시
+            throw new AlertException(Utils.getMessage("비밀번호가_일치하지_않습니다.", "error"));
+        }
+
+        // 검증 성공시
+        String key = "chk_" + seq;
+        session.setAttribute(key, true);
+        session.removeAttribute("guest_seq");
+
+        model.addAttribute("script", "parent.location.reload()");
+        return "common/_execute_script";
     }
 
     private void commonProcess(String bId, String mode, Model model) {
 
         Board board = configInfoService.get(bId);
-
-        if (board == null || (!board.isActive()) && !memberUtil.isAdmin()) { // 등록되지 않거나 또는 미사용 중 게시판
+        if (board == null || (!board.isActive() && !memberUtil.isAdmin())) { // 등록되지 않거나 또는 미사용 중 게시판
             throw new BoardNotFoundException();
         }
 
@@ -102,24 +179,27 @@ public class BoardController implements ScriptExceptionProcess {
         String category = board.getCategory();
         List<String> categories = StringUtils.hasText(category) ?
                 Arrays.stream(category.trim().split("\\n"))
-                        .map(s-> s.replaceAll("\\r",""))
+                        .map(s -> s.replaceAll("\\r", ""))
                         .toList()
                 : null;
 
         model.addAttribute("categories", categories);
         /* 게시판 분류 E */
 
-
         String bName = board.getBName();
         String pageTitle = bName;
         if (mode.equals("write")) pageTitle = bName + " 작성";
         else if (mode.equals("update")) pageTitle = bName + " 수정";
-        else if (mode.equals("view")) pageTitle = "게시글 제목";
+        else if (mode.equals("view") && boardData != null) {
+            pageTitle = boardData.getSubject() + "||" + bName;
+        }
+
 
         /* 글쓰기, 수정시 권한 체크 S */
         if (mode.equals("write") || mode.equals("update")) {
             BoardAuthority authority = board.getAuthority();
-            if (!memberUtil.isAdmin() && !memberUtil.isLogin() && authority == BoardAuthority.MEMBER) { // 회원 전용
+            if (!memberUtil.isAdmin() && !memberUtil.isLogin()
+                    && authority == BoardAuthority.MEMBER) { // 회원 전용
                 throw new AlertBackException(Utils.getMessage("MemberOnly.board", "error"));
             }
 
@@ -128,7 +208,6 @@ public class BoardController implements ScriptExceptionProcess {
             }
         }
         /* 글쓰기, 수정시 권한 체크 E */
-
 
         List<String> addCommonScript = new ArrayList<>();
         List<String> addScript = new ArrayList<>();
@@ -143,5 +222,12 @@ public class BoardController implements ScriptExceptionProcess {
         model.addAttribute("addCommonScript", addCommonScript);
         model.addAttribute("addScript", addScript);
         model.addAttribute("pageTitle", pageTitle);
+        model.addAttribute("board", board);
+    }
+
+    @ExceptionHandler(RequiredPasswordCheckException.class)
+    public String guestPassword() {
+
+        return utils.tpl("board/password");
     }
 }
