@@ -16,12 +16,10 @@ import org.parkhojin.commons.Pagination;
 import org.parkhojin.commons.Utils;
 import org.parkhojin.controllers.boards.BoardDataSearch;
 import org.parkhojin.controllers.boards.BoardForm;
-import org.parkhojin.entities.BoardData;
-import org.parkhojin.entities.FileInfo;
-import org.parkhojin.entities.Member;
-import org.parkhojin.entities.QBoardData;
+import org.parkhojin.entities.*;
 import org.parkhojin.models.file.FileInfoService;
 import org.parkhojin.repositories.BoardDataRepository;
+import org.parkhojin.repositories.BoardViewRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -34,12 +32,55 @@ import java.util.Objects;
 public class BoardInfoService {
 
     private final BoardDataRepository boardDataRepository;
+    private final BoardViewRepository boardViewRepository;
+
     private final FileInfoService fileInfoService;
     private final HttpServletRequest request;
     private final EntityManager em;
     private final MemberUtil memberUtil;
     private final HttpSession session;
-    private  final PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
+    private final Utils utils;
+
+
+    /*
+    * 조회수 Uid
+    *       비회원 - Utils::guestUid() : id + User-Agent(브라우저 종류)
+    *       회원 - 회원번호
+    * @return
+    * */
+    public int viewUid() {
+        return memberUtil.isLogin() ? memberUtil.getMember().getUserNo().intValue() : utils.guestUid();
+    }
+
+    /*
+     * 게시물 별 조회수 업데이트
+     *
+     * @param seq
+     * */
+
+    public void updateView(Long seq){
+        try {
+            BoardView boardView = new BoardView();
+            boardView.setSeq(seq);
+            boardView.setUid(viewUid());
+
+            boardViewRepository.saveAndFlush(boardView);
+        } catch (Exception e){}
+
+        // 게시글별 총 조회수 산출
+        QBoardView boardView = QBoardView.boardView;
+        long cnt = boardViewRepository.count(boardView.seq.eq(seq));
+
+        // 게시글 데이터에 업데이트(viewCnt)
+        BoardData data = boardDataRepository.findById(seq).orElse(null);
+        if (data == null) return;
+
+        data.setViewCnt((int)cnt);
+        boardDataRepository.flush();
+    }
+
+
 
     public BoardData get(Long seq) {
 
@@ -74,8 +115,8 @@ public class BoardInfoService {
         andBuilder.and(boardData.board.bId.eq(bId));
 
         // 게시판 분류 검색 처리
-        if (StringUtils.hasText(category)){
-            category= category.trim();
+        if (StringUtils.hasText(category)) {
+            category = category.trim();
             andBuilder.and(boardData.category.eq(category));
         }
 
@@ -159,7 +200,7 @@ public class BoardInfoService {
             // 세션에 chk_게시글 번호 항목이 있으면 비번 검증 완료
             String key = "chk_" + seq;
             if (session.getAttribute(key) == null) {// 비회원 비밀번호 검증 X -> 검증 화면으로 이동
-                session.setAttribute("guest_seq",seq);
+                session.setAttribute("guest_seq", seq);
                 throw new RequiredPasswordCheckException();
             } else {
                 return true;
@@ -168,9 +209,10 @@ public class BoardInfoService {
         }
 
     }
-    public boolean checkGuestPassword(Long seq, String password){
-        BoardData data= get(seq);
-        String guestPw=data.getGuestPw();
+
+    public boolean checkGuestPassword(Long seq, String password) {
+        BoardData data = get(seq);
+        String guestPw = data.getGuestPw();
         if (!StringUtils.hasText(guestPw)) {
             return false;
         }
