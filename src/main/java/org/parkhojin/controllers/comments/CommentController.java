@@ -13,10 +13,7 @@ import org.parkhojin.models.comment.CommentSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,24 @@ public class CommentController implements ScriptExceptionProcess {
     private final CommentInfoService infoService;
     private final Utils utils;
 
+    @GetMapping("/update/{seq}")
+    public String update(@PathVariable("seq") Long seq, Model model) {
+
+        infoService.isMine(seq);
+
+        CommentForm form = infoService.getForm(seq);
+        BoardData boardData = form.getBoardData();
+
+        model.addAttribute("boardData", boardData);
+        model.addAttribute("commentForm", form);
+        model.addAttribute("mode","update");
+
+        return utils.tpl("board/comment_update");
+    }
+
+
     @PostMapping("/save")
-    public String save(@Valid CommentForm form, Errors errors, Model model){
+    public String save(@Valid CommentForm form, Errors errors, Model model) {
 
         saveService.save(form, errors);
 
@@ -45,21 +58,29 @@ public class CommentController implements ScriptExceptionProcess {
             throw new AlertException(message);
         }
 
-
+         Long seq = form.getSeq();
         // 댓글 작성 완료 시에 부모창을 새로고침 -> 새로운 목록 갱신
-        model.addAttribute("script","parent.location.reload();");
-        return "common/_execute_script";
+        if (seq == null) {
+            model.addAttribute("script", "parent.location.reload();");
+            return "common/_execute_script";
+        } else{
+            // 댓글 수정 시 -> 게시글 보기 페이지 이동 -> 해당 댓글 위치로 이동
+
+            return "redirect:/board/view/" + form.getBoardDataSeq() + "comment_" + seq;
+        }
+
     }
 
     @RequestMapping("/delete/{seq}")
-    public String delete(@PathVariable("seq") Long seq){
+    public String delete(@PathVariable("seq") Long seq) {
 
         BoardData boardData = deleteService.delete(seq);
 
         return "redirect:/board/view/" + boardData.getSeq() + "#comments";
     }
+
     @ExceptionHandler(RequiredPasswordCheckException.class)
-    public String guestPassword(){
+    public String guestPassword() {
         return utils.tpl("board/password");
 
     }

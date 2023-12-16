@@ -7,9 +7,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.parkhojin.commons.MemberUtil;
 import org.parkhojin.commons.Utils;
 import org.parkhojin.commons.exceptions.AlertBackException;
+import org.parkhojin.controllers.comments.CommentForm;
 import org.parkhojin.entities.BoardData;
 import org.parkhojin.entities.CommentData;
 import org.parkhojin.entities.Member;
@@ -39,6 +41,14 @@ public class CommentInfoService {
 
         return comment;
     }
+    public CommentForm getForm(Long seq){
+        CommentData comment = get(seq);
+        CommentForm form = new ModelMapper().map(comment, CommentForm.class);
+        form.setBoardDataSeq(comment.getBoardData().getSeq());
+
+        return form;
+    }
+
 
     /**
      * 댓글 목록

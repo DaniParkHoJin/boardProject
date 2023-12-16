@@ -3,6 +3,8 @@ package org.parkhojin.controllers.comments;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.parkhojin.entities.BoardData;
+import org.parkhojin.entities.Member;
 
 @Data
 public class CommentForm {
@@ -17,4 +19,8 @@ public class CommentForm {
 
     @NotBlank
     private String content;
+
+    private Member member;
+
+    private BoardData boardData;
 }
