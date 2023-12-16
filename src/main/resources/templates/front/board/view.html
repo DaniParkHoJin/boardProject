@@ -20,7 +20,6 @@
             <th:block th:if="*{viewCnt < 1000}" th:text="*{viewCnt}"></th:block>
             <th:block th:if="*{viewCnt >= 1000}"
                       th:text="*{#numbers.formatInteger(viewCnt, 3, 'COMMA')}"></th:block>
-
         </div>
     </div>
     <div class="content" th:utext="*{content}"></div>
@@ -39,7 +38,8 @@
         <a th:href="@{/board/list/{bId}(bId=${board.bId})}" th:text="#{글목록}"></a>
     </div>
 
-    <th:block th:replace="~{front/board/_list::list}"></th:block>
+    <th:block th:replace="~{front/board/_comment::comment}"></th:block>
 
+    <th:block th:replace="~{front/board/_list::list}"></th:block>
 </main>
 </html>

@@ -1,16 +1,50 @@
 package org.parkhojin.controllers.comments;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.parkhojin.commons.ScriptExceptionProcess;
+import org.parkhojin.commons.Utils;
+import org.parkhojin.commons.exceptions.AlertException;
+import org.parkhojin.entities.BoardData;
+import org.parkhojin.models.board.RequiredPasswordCheckException;
+import org.parkhojin.models.comment.CommentDeleteService;
+import org.parkhojin.models.comment.CommentInfoService;
+import org.parkhojin.models.comment.CommentSaveService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/comment")
-public class CommentController {
+@RequiredArgsConstructor
+public class CommentController implements ScriptExceptionProcess {
+
+    private final CommentSaveService saveService;
+    private final CommentDeleteService deleteService;
+    private final CommentInfoService infoService;
+    private final Utils utils;
+
     @PostMapping("/save")
-    public String save(Model model){
+    public String save(@Valid CommentForm form, Errors errors, Model model){
+
+        saveService.save(form, errors);
+
+        if (errors.hasErrors()) {
+            Map<String, List<String>> messages = Utils.getMessages(errors);
+
+            String message = (new ArrayList<List<String>>(messages.values())).get(0).get(0);
+
+            throw new AlertException(message);
+        }
+
 
         // 댓글 작성 완료 시에 부모창을 새로고침 -> 새로운 목록 갱신
         model.addAttribute("script","parent.location.reload();");
@@ -20,7 +54,14 @@ public class CommentController {
     @RequestMapping("/delete/{seq}")
     public String delete(@PathVariable("seq") Long seq){
 
-        return "redirect:/board/view/게시글 번호";
+        BoardData boardData = deleteService.delete(seq);
+
+        return "redirect:/board/view/" + boardData.getSeq() + "#comments";
+    }
+    @ExceptionHandler(RequiredPasswordCheckException.class)
+    public String guestPassword(){
+        return utils.tpl("board/password");
+
     }
 
 }

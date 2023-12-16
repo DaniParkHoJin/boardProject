@@ -16,6 +16,8 @@ import org.parkhojin.entities.FileInfo;
 import org.parkhojin.models.board.*;
 import org.parkhojin.models.board.config.BoardConfigInfoService;
 import org.parkhojin.models.board.config.BoardNotFoundException;
+import org.parkhojin.models.comment.CommentInfoService;
+import org.parkhojin.models.comment.CommentNotFoundException;
 import org.parkhojin.models.file.FileInfoService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,11 +41,12 @@ public class BoardController implements ScriptExceptionProcess {
     private final BoardDeleteService deleteService;
     private final BoardConfigInfoService configInfoService;
     private final FileInfoService fileInfoService;
+    private final CommentInfoService commentInfoService;
 
     private BoardData boardData;
 
     @GetMapping("/write/{bId}")
-    public String write(@PathVariable("bId") String bId, @ModelAttribute  BoardForm form, Model model) {
+    public String write(@PathVariable("bId") String bId, @ModelAttribute BoardForm form, Model model) {
         commonProcess(bId, "write", model);
 
         if (memberUtil.isLogin()) {
@@ -103,7 +106,7 @@ public class BoardController implements ScriptExceptionProcess {
 
     @GetMapping("/view/{seq}")
     public String view(@PathVariable("seq") Long seq,
-                       @ModelAttribute  BoardDataSearch search, Model model) {
+                       @ModelAttribute BoardDataSearch search, Model model) {
 
         // 게시글 조회수 업데이트
         infoService.updateView(seq);
@@ -153,7 +156,13 @@ public class BoardController implements ScriptExceptionProcess {
     @PostMapping("/guest/password")
     public String guestPasswordCheck(@RequestParam("password") String password, HttpSession session, Model model) {
 
-        Long seq = (Long)session.getAttribute("guest_seq");
+        Long seq = (Long) session.getAttribute("guest_seq");
+        // 댓글 비회원 비밀번호 확인 경우
+        Long commentSeq = (Long) session.getAttribute("comment_seq");
+        if (commentSeq != null) {
+            return guestCommentPasswordCheck(commentSeq, password, session, model);
+        }
+
         if (seq == null) {
             throw new BoardDataNotFoundException();
         }
@@ -168,6 +177,25 @@ public class BoardController implements ScriptExceptionProcess {
         session.removeAttribute("guest_seq");
 
         model.addAttribute("script", "parent.location.reload()");
+        return "common/_execute_script";
+    }
+
+    private String guestCommentPasswordCheck(Long seq, String password, HttpSession session, Model model) {
+
+        if (seq == null) {
+            throw new CommentNotFoundException();
+        }
+
+        if (!commentInfoService.checkGuestPassword(seq, password)) { // 비번 검증 실패시
+            throw new AlertException(Utils.getMessage("비밀번호가_일치하지_않습니다.", "error"));
+        }
+
+        // 검증성공시
+        String key = "chk_comment_" + seq;
+        session.setAttribute(key, true);
+        session.removeAttribute("comment_seq");
+
+        model.addAttribute("script", "parent/location.reload()");
         return "common/_execute_script";
     }
 

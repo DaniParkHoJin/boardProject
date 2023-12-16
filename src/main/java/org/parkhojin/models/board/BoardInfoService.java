@@ -17,6 +17,7 @@ import org.parkhojin.commons.Utils;
 import org.parkhojin.controllers.boards.BoardDataSearch;
 import org.parkhojin.controllers.boards.BoardForm;
 import org.parkhojin.entities.*;
+import org.parkhojin.models.comment.CommentInfoService;
 import org.parkhojin.models.file.FileInfoService;
 import org.parkhojin.repositories.BoardDataRepository;
 import org.parkhojin.repositories.BoardViewRepository;
@@ -33,6 +34,7 @@ public class BoardInfoService {
 
     private final BoardDataRepository boardDataRepository;
     private final BoardViewRepository boardViewRepository;
+    private final CommentInfoService commentInfoService;
 
     private final FileInfoService fileInfoService;
     private final HttpServletRequest request;
@@ -85,6 +87,8 @@ public class BoardInfoService {
     public BoardData get(Long seq) {
 
         BoardData data = boardDataRepository.findById(seq).orElseThrow(BoardDataNotFoundException::new);
+
+        data.setComments(commentInfoService.getList(data.getSeq()));
 
         addFileInfo(data);
 

@@ -16,9 +16,10 @@ import org.springframework.validation.Errors;
 
 @Service
 @RequiredArgsConstructor
-public class CommentSavaService {
+public class CommentSaveService {
     private final CommentDataRepository commentDataRepository;
     private final BoardDataRepository boardDataRepository;
+    private final CommentInfoService commentInfoService;
     private final CommentFormValidator validator;
     private final MemberUtil memberUtil;
     private final PasswordEncoder encoder;
@@ -55,5 +56,9 @@ public class CommentSavaService {
     public void save(CommentData comment) {
 
         commentDataRepository.saveAndFlush(comment);
+
+        // 총 댓글 갯수 없데이트
+        Long boardDataSeq = comment.getBoardData().getSeq();
+        commentInfoService.updateCommentCnt(boardDataSeq);
     }
 }

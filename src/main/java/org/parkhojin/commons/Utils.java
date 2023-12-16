@@ -4,17 +4,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
 public class Utils {
-    private static ResourceBundle validationsBundle;
-    private static ResourceBundle errorsBundle;
+    private static final ResourceBundle validationsBundle;
+    private static final ResourceBundle errorsBundle;
 
-    private static ResourceBundle commonsBundle;
+    private static final ResourceBundle commonsBundle;
 
     private final HttpServletRequest request;
 
@@ -96,4 +97,28 @@ public class Utils {
 
         return Objects.hash(ip, ua);
     }
+
+    public static Map<String, List<String>> getMessages(Errors errors) {
+        try {
+            Map<String, List<String>> data = new HashMap<>();
+            for (FieldError error : errors.getFieldErrors()) {
+                String field = error.getField();
+                List<String> messages = Arrays.stream(error.getCodes()).sorted(Comparator.reverseOrder())
+                        .map(c -> getMessage(c, "validation"))
+                        .filter(c -> c != null)
+                        .toList();
+
+                data.put(field, messages);
+            }
+
+            return data;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public String nl2br(String str) {
+        return str.replaceAll("\\r", "").replaceAll("\\n", "<br>");
+    }
+
 }
